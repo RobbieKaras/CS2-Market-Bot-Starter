@@ -1,0 +1,26 @@
+[
+  {
+    "market_name": "AK-47 | Slate (Field-Tested)",
+    "weapon": "AK-47",
+    "skin_name": "Slate",
+    "wear": "Field-Tested",
+    "rarity": "Restricted",
+    "collection": "Snakebite"
+  },
+  {
+    "market_name": "M4A4 | Magnesium (Field-Tested)",
+    "weapon": "M4A4",
+    "skin_name": "Magnesium",
+    "wear": "Field-Tested",
+    "rarity": "Mil-Spec",
+    "collection": "Danger Zone"
+  },
+  {
+    "market_name": "USP-S | Ticket to Hell (Field-Tested)",
+    "weapon": "USP-S",
+    "skin_name": "Ticket to Hell",
+    "wear": "Field-Tested",
+    "rarity": "Restricted",
+    "collection": "Dreams & Nightmares"
+  }
+]
