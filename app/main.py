@@ -18,6 +18,7 @@ from app.db.queries import (
     get_all_items,
     get_recent_prices,
     get_unsent_opportunities,
+    has_recent_alert_for_item,
     insert_opportunity,
     insert_price_snapshot,
     mark_alert_sent,
@@ -65,6 +66,17 @@ async def run_scan_cycle() -> None:
             estimated_profit >= settings.min_profit_usd
             and discount_percent >= settings.min_discount_percent
         ):
+            if has_recent_alert_for_item(
+                item_id=item["id"],
+                source=normalized["source"],
+                cooldown_minutes=settings.alert_cooldown_minutes,
+            ):
+                logger.info(
+                    "Skipping duplicate alert for %s because it is still in cooldown.",
+                    normalized["market_name"],
+                )
+                continue
+
             insert_opportunity(
                 item_id=item["id"],
                 source=normalized["source"],
