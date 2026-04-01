@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -112,6 +112,27 @@ def insert_opportunity(
     conn.commit()
     conn.close()
     return int(opportunity_id)
+
+
+def has_recent_alert_for_item(item_id: int, source: str, cooldown_minutes: int = 60) -> bool:
+    cutoff = (datetime.now(timezone.utc) - timedelta(minutes=cooldown_minutes)).isoformat()
+
+    conn = get_connection()
+    cur = conn.cursor()
+    row = cur.execute(
+        """
+        SELECT 1
+        FROM opportunities o
+        JOIN alerts_sent a ON a.opportunity_id = o.id
+        WHERE o.item_id = ?
+          AND o.source = ?
+          AND a.sent_at >= ?
+        LIMIT 1
+        """,
+        (item_id, source, cutoff),
+    ).fetchone()
+    conn.close()
+    return row is not None
 
 
 def get_unsent_opportunities() -> list[dict[str, Any]]:
