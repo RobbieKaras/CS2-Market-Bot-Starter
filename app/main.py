@@ -5,7 +5,6 @@ import asyncio
 from app.alerts.discord_webhook import send_webhook_message
 from app.alerts.formatter import format_discord_alert
 from app.analyzers.arbitrage import (
-    calculate_baseline,
     calculate_discount_percent,
     estimate_profit_after_fee,
     score_opportunity,
@@ -16,7 +15,6 @@ from app.config import settings
 from app.db.database import init_db
 from app.db.queries import (
     get_all_items,
-    get_recent_prices,
     get_unsent_opportunities,
     has_recent_alert_for_item,
     insert_opportunity,
@@ -37,7 +35,7 @@ async def run_scan_cycle() -> None:
 
     fetcher = MarketFetcher()
     market_names = [item["market_name"] for item in items]
-    raw_results = await fetcher.fetch_many(market_names, source="steam")
+    raw_results = await fetcher.fetch_many(market_names, source="skinport")
 
     item_lookup = {item["market_name"]: item for item in items}
 
@@ -52,12 +50,7 @@ async def run_scan_cycle() -> None:
             volume=normalized["volume"],
         )
 
-        recent_prices = get_recent_prices(item_id=item["id"], source=normalized["source"], limit=20)
-        baseline = calculate_baseline(recent_prices)
-        if baseline is None:
-            logger.info("Skipping %s until more history is available.", normalized["market_name"])
-            continue
-
+        baseline = normalized["baseline_price"]
         discount_percent = calculate_discount_percent(normalized["listing_price"], baseline)
         estimated_profit = estimate_profit_after_fee(normalized["listing_price"], baseline)
         score = score_opportunity(discount_percent, estimated_profit, normalized["volume"])
@@ -101,7 +94,7 @@ async def main() -> None:
     init_db()
     seed_items_from_json("data/items.json")
 
-    logger.info("Starting CS2 market bot...")
+    logger.info("Starting CS2 market bot with Skinport data...")
     while True:
         try:
             await run_scan_cycle()
